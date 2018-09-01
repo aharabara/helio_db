@@ -1,28 +1,34 @@
 ## HeliDB todo list.
 ### Stage 1
- - [ ] Table definition query
+ - [x] Table definition query
     - [x] Base query
     - [x] Field types
-    - [ ] Data storing according to table definition
 
 ### Stage 2
- - [ ] Data selection query
+ - [x] Data selection query
     - [x] Single table
     - [x] Base query
     - [x] Specific fields
-    - [ ] Multiple tables
 
 ### Stage 3
- - [ ] Table modification query
-    - [ ] Specific fields
-
-### Stage 4
  - [ ] Data modification query
      - [ ] Insert
      - [ ] Update
      - [ ] Delete
 
+### Stage 4
+ - [ ] Data selection query
+    - [ ] Multiple tables
+
 ### Stage 5
+ - [ ] Table modification query
+    - [ ] Specific fields
+
+### Stage 6
+ - [ ] Table definition query
+    - [ ] Data storing according to table definition
+
+### Stage 7
 Database entity
  - [ ] Allow multiple databases
  - [ ] Add user management
