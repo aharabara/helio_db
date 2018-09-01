@@ -1,115 +1,109 @@
+extern crate serde_json;
+
 use serde_json::Value;
 use server::definition::Definition;
-use std::fmt;
-use server::DefinitionStatus;
+use server::QueryStatus;
 use server::storage::Storage;
 use serde_json::Map;
 use server::database::Database;
-
-#[derive(Debug)]
-#[derive(Serialize, Deserialize)]
-pub enum QueryType {
-    CREATE,
-    READ,
-    UPDATE,
-    DELETE,
-}
-
-#[derive(Debug)]
-#[derive(Serialize, Deserialize)]
-pub enum QueryStatus {
-    NEW,
-    EXECUTED,
-    FAILED,
-}
+use server::selection::Selection;
 
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
 pub struct Query {
-    query_status: QueryStatus,
-    query_type: QueryType,
-    definition: Option<Definition>,
+    definition  : Option<Definition>,
+    selection   : Option<Selection>,
+//    modification: Option<Modification>,
 }
 
 impl Query {
-    pub fn from_json_object(query_request: Value) -> Result<Query, DefinitionStatus> {
-        let result;
+    pub fn from_json_object(query_request: Value) -> Result<Query, QueryStatus> {
+        let possible_definition;
+        let possible_selection;
+//        let possible_modification;
+
         let possible_query_obj = query_request.as_object();
         if possible_query_obj.is_none() {
-            return Err(DefinitionStatus::InvalidInvalidQuery)
+            return Err(QueryStatus::InvalidQuery)
         }
 
         let query_object = possible_query_obj.unwrap();
-        if Query::has_definition(query_object) {
-            result = Definition::from_json_object(query_object.get("define").unwrap());
-            if result.is_err() {
-                return Err(result.err().unwrap());
+
+        // if there is any storage definition clause
+        if Query::has_query_type("define",query_object) {
+            possible_definition = Definition::from_json_object(query_object.get("define").unwrap());
+            if possible_definition.is_err() {
+                return Err(possible_definition.err().unwrap());
             }
         }else{
-            unimplemented!("\nIs not a creation query!\n")
+            possible_definition = Err(QueryStatus::NoDefinition)
+        }
+
+        // if there is any data selection clause
+        if Query::has_query_type("select", query_object) {
+            possible_selection = Selection::from_json_object(query_object.get("select").unwrap());
+            if possible_selection.is_err() {
+                return Err(possible_selection.err().unwrap());
+            }
+        }else{
+            possible_selection = Err(QueryStatus::NoDefinition)
+        }
+
+        // @TODO
+//        // if there is any data selection clause
+//        if Query::has_query_type("modify", query_object) {
+//            possible_modification = Selection::from_json_object(query_object.get("modify").unwrap());
+//            if possible_modification.is_err() {
+//                return Err(possible_modification.err().unwrap());
+//            }
+//        }else{
+//            possible_definition = Err(DefinitionStatus::NoDefinition)
+//        }
+        if Query::has_query_type("modify", query_object) {
+            unimplemented!("\nIs not a update query!\n")
         }
 
         let query = Query {
-            query_status: QueryStatus::NEW,
-            query_type: QueryType::CREATE,
-            definition: result.ok(),
+            definition  : possible_definition.ok(),
+            selection   : possible_selection.ok(),
+//            modification: possible_modification.ok(),
         };
 
         return Ok(query);
     }
 
-    pub fn execute(self, database: &mut Database) {
-        match self.query_type {
-            QueryType::CREATE => {
-                let definition = self.definition.unwrap();
-                database.add(Storage::new(definition))
-            },
-            _ => {
-                unimplemented!("Implement more then just definition creation.")
-            }
+    pub fn execute(self, database: &mut Database) -> Result<String, QueryStatus> {
+        if self.definition.is_some() {
+            let definition = self.definition.unwrap();
+            database.add(Storage::new(definition))
         }
+        if self.selection.is_some() {
+            let selection = self.selection.unwrap();
+            let possible_storage = database.get_storage_by_definition_name(selection.definition_name.as_ref());
+            if possible_storage.is_err() {
+                return Err(possible_storage.err().unwrap());
+            }
+            let result = possible_storage.unwrap().search(&selection);
+            if result.is_err() {
+                return Err(result.err().unwrap());
+            }
+            let rows = result.ok().unwrap().to_owned();
+            let json = serde_json::to_string(&rows).unwrap();
+
+            return Ok(json);
+        }
+        return Ok("{\"status\" :\"Something went wrong\" }".to_string());
     }
-    pub fn has_definition(query_obj: &Map<String, Value>) -> bool {
-        let possible_define = query_obj.get("define");
+    pub fn has_query_type(query_type : &str, query_obj: &Map<String, Value>) -> bool {
+        let possible_define = query_obj.get(query_type);
         if possible_define.is_none() {
-            println!("No define clause.");
+            println!("Query doesn't contain any '{}' clause.", query_type);
             return false;
         }
         if possible_define.unwrap().as_object().is_none(){
-            println!("Definition clause is empty.");
+            println!("Query '{}' clause is empty.", query_type);
             return false;
         }
         return true;
-    }
-}
-
-impl fmt::Display for Query {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.definition.is_none() {
-            return write!(f, "({}, {})", self.query_type, self.query_status)
-        }
-        let definition = self.definition.as_ref().unwrap();
-        return write!(f, "({}, {}, {})", self.query_type, self.query_status, definition)
-    }
-}
-
-impl fmt::Display for QueryType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            QueryType::CREATE => write!(f, "create"),
-            QueryType::READ => write!(f, "read"),
-            QueryType::UPDATE => write!(f, "update"),
-            QueryType::DELETE => write!(f, "delete"),
-        }
-    }
-}
-
-impl fmt::Display for QueryStatus {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            QueryStatus::EXECUTED => write!(f, "execute"),
-            QueryStatus::FAILED => write!(f, "faile"),
-            QueryStatus::NEW => write!(f, "new"),
-        }
     }
 }

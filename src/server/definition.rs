@@ -5,7 +5,7 @@ use serde_json::Map;
 use std::string::String;
 use server::FieldMap;
 use server::FieldType;
-use server::DefinitionStatus;
+use server::QueryStatus;
 
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
@@ -18,27 +18,21 @@ impl Definition {
     fn new(name: String, fields: FieldMap) -> Definition {
         Definition { name, fields }
     }
-    pub fn from_json_object(obj: &Value) -> Result<Definition, DefinitionStatus> {
+    pub fn from_json_object(obj: &Value) -> Result<Definition, QueryStatus> {
         let map = obj.as_object().unwrap();
         let result = Definition::validate(map);
         if result.is_err() {
             return Err(result.err().unwrap());
         }
-        let status = result.unwrap();
-        // @fixme refactor it
-        match status {
-            DefinitionStatus::Good => { /* is a valid definition */ }
-            _ => { return Err(status); }
-        };
         // handle name
         let possible_name = map["name"].as_str();
         if possible_name.is_none() {
-            return Err(DefinitionStatus::NoName);
+            return Err(QueryStatus::NoName);
         }
         let name = possible_name.unwrap().to_string();
         let possible_object = map["fields"].as_object();
         if possible_object.is_none() {
-            return Err(DefinitionStatus::NoFields);
+            return Err(QueryStatus::NoFields);
         }
         let object = possible_object.unwrap();
         let possible_fields = Definition::object_to_fields(object);
@@ -50,17 +44,17 @@ impl Definition {
         Ok(Definition::new(name, fields))
     }
 
-    fn validate(map: &Map<String, Value>) -> Result<DefinitionStatus, DefinitionStatus> {
+    fn validate(map: &Map<String, Value>) -> Result<QueryStatus, QueryStatus> {
         if !map.contains_key("name") {
-            return Err(DefinitionStatus::NoName);
+            return Err(QueryStatus::NoName);
         }
         if !map.contains_key("fields") {
-            return Err(DefinitionStatus::NoFields);
+            return Err(QueryStatus::NoFields);
         }
-        Ok(DefinitionStatus::Good)
+        Ok(QueryStatus::Good)
     }
 
-    fn object_to_fields(map: &Map<String, Value>) -> Result<FieldMap, DefinitionStatus> {
+    fn object_to_fields(map: &Map<String, Value>) -> Result<FieldMap, QueryStatus> {
         let mut fields: FieldMap = HashMap::new();
         for (name, field_type) in map {
             match field_type.as_str().unwrap().as_ref() {
@@ -74,7 +68,7 @@ impl Definition {
                     fields.insert(name.to_string(), FieldType::STRING);
                 }
                 _ => {
-                    return Err(DefinitionStatus::InvalidFieldType);
+                    return Err(QueryStatus::InvalidFieldType);
                 }
             }
         }

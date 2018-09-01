@@ -4,19 +4,25 @@ pub mod query;
 pub mod storage;
 pub mod database;
 pub mod definition;
+pub mod selection;
+pub mod where_clause;
 
 pub type FieldMap = HashMap<String, FieldType>;
 
 
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
-pub enum DefinitionStatus {
+pub enum QueryStatus {
+    NoDefinition,
     NoFields,
     NoName,
     InvalidFieldType,
-    InvalidInvalidQuery,
+    InvalidQuery,
     General,
-    Good
+    Good,
+    NoDefinitionSpecified,
+    InvalidSelectionFieldsFormat,
+    SpecifiedDefinitionDoNotExist
 }
 
 #[derive(Debug)]

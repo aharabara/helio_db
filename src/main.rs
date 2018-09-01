@@ -11,30 +11,32 @@ use helio_db::server::query::Query;
 use std::io::Cursor;
 use std::borrow::BorrowMut;
 use helio_db::server::database::Database;
+use helio_db::server::QueryStatus;
 
 fn main() {
     let server = Server::http("0.0.0.0:8000").unwrap();
     let mut database = Database::new();
     for mut request in server.incoming_requests() {
-        println!("received request! method:\n{:?}\nurl: {:?}\nheaders: {:?}\n",
+        println!("received request! method:\n{:#?}\nurl: {:#?}\nheaders: {:?}\n",
                  request.method(),
                  request.url(),
                  request.headers()
         );
         let json = request.get_json();
-
         let response = request.get_response(json, database.borrow_mut());
+        /*@todo add bad response (>400)*/
         if response.is_err() {
-            panic!(response.err())
+            println!("Error : {:#?}", response.err().unwrap());
+        }else {
+            request.respond(response.unwrap()).unwrap();
         }
-        request.respond(response.unwrap()).unwrap();
     }
 }
 
 
 pub trait RequestExt {
     fn get_json(&mut self) -> Result<Value, Error>;
-    fn get_response(&mut self, json: Result<Value, Error>, database : &mut Database) -> Result<Response<Cursor<Vec<u8>>>, Error>;
+    fn get_response(&mut self, json: Result<Value, Error>, database : &mut Database) -> Result<Response<Cursor<Vec<u8>>>, QueryStatus>;
 }
 
 impl RequestExt for Request {
@@ -46,7 +48,7 @@ impl RequestExt for Request {
 
     // handle request
     /*@todo rewrite to json response */
-    fn get_response(&mut self,  json: Result<Value, Error>, database : &mut Database) -> Result<Response<Cursor<Vec<u8>>>, Error> {
+    fn get_response(&mut self,  json: Result<Value, Error>, database : &mut Database) -> Result<Response<Cursor<Vec<u8>>>, QueryStatus> {
         let response;
         match json {
             Ok(value) => {
@@ -54,12 +56,11 @@ impl RequestExt for Request {
                 if query.is_err() {
                     response = Response::from_string(format!("ERROR: {:?}\n", query.err().unwrap()));
                 } else {
-                    query.unwrap().execute(database);
-                    let possible_json_respons = serde_json::to_string(database);
-                    if possible_json_respons.is_err() {
-                        return Err(possible_json_respons.err().unwrap());
+                    let possible_json_response = query.unwrap().execute(database);
+                    if possible_json_response.is_err() {
+                        return Err(possible_json_response.err().unwrap());
                     }
-                    response = Response::from_string(possible_json_respons.unwrap());
+                    response = Response::from_string(possible_json_response.unwrap());
                 }
             }
             Err(error) => {
