@@ -7,20 +7,21 @@ use server::storage::Storage;
 use serde_json::Map;
 use server::database::Database;
 use server::selection::Selection;
+use server::insertion::Insertion;
 
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
 pub struct Query {
     definition  : Option<Definition>,
     selection   : Option<Selection>,
-//    modification: Option<Modification>,
+    insertion   : Option<Insertion>,
 }
 
 impl Query {
     pub fn from_json_object(query_request: Value) -> Result<Query, QueryStatus> {
         let possible_definition;
         let possible_selection;
-//        let possible_modification;
+        let possible_modification;
 
         let possible_query_obj = query_request.as_object();
         if possible_query_obj.is_none() {
@@ -46,27 +47,23 @@ impl Query {
                 return Err(possible_selection.err().unwrap());
             }
         }else{
-            possible_selection = Err(QueryStatus::NoDefinition)
+            possible_selection = Err(QueryStatus::NoSelection)
         }
 
-        // @TODO
-//        // if there is any data selection clause
-//        if Query::has_query_type("modify", query_object) {
-//            possible_modification = Selection::from_json_object(query_object.get("modify").unwrap());
-//            if possible_modification.is_err() {
-//                return Err(possible_modification.err().unwrap());
-//            }
-//        }else{
-//            possible_definition = Err(DefinitionStatus::NoDefinition)
-//        }
-        if Query::has_query_type("modify", query_object) {
-            unimplemented!("\nIs not a update query!\n")
+        // if there is any data selection clause
+        if Query::has_query_type("insert", query_object) {
+            possible_insertion = Insertion::from_json_object(query_object.get("insert").unwrap());
+            if possible_insertion.is_err() {
+                return Err(possible_insertion.err().unwrap());
+            }
+        }else{
+            possible_insertion = Err(QueryStatus::NoModification)
         }
 
         let query = Query {
             definition  : possible_definition.ok(),
             selection   : possible_selection.ok(),
-//            modification: possible_modification.ok(),
+            insertion   : possible_insertion.ok(),
         };
 
         return Ok(query);

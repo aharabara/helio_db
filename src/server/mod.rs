@@ -5,6 +5,7 @@ pub mod storage;
 pub mod database;
 pub mod definition;
 pub mod selection;
+pub mod insertion;
 pub mod where_clause;
 
 pub type FieldMap = HashMap<String, FieldType>;
@@ -14,6 +15,8 @@ pub type FieldMap = HashMap<String, FieldType>;
 #[derive(Serialize, Deserialize)]
 pub enum QueryStatus {
     NoDefinition,
+    NoModification,
+    NoSelection,
     NoFields,
     NoName,
     InvalidFieldType,
@@ -23,7 +26,9 @@ pub enum QueryStatus {
     NoDefinitionSpecified,
     InvalidSelectionFieldsFormat,
     SpecifiedDefinitionDoNotExist,
-    FieldsClauseShouldContainOnlyStrings
+    FieldsClauseShouldContainOnlyStrings,
+    DataForInsertionNotSpecified,
+    InvalidRowFormat
 }
 
 #[derive(Debug)]

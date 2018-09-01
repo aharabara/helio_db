@@ -34,7 +34,56 @@ Database entity
  - [ ] Add user management
  - [ ] Add user authentication
 
-## Glosario
+### Stage 8
+ - [ ] Reference to another table field type.
+
+### Stage 9
+ - [ ] Multiple queries per request
+ ```
+ [{<query>}, {<query>}, {<query>}].
+ ```
+
+### Stage 10
+ - [ ] Transactions?
+
+## Glossaries
  Storage  - table, that has definition and data that match this definition
 
  Database - collection of storages
+
+## Examples
+
+Selection :
+```
+{
+    "select" : {
+        "storage" : "<storage name>",
+        "fields"  : [...<fields>]
+    }
+}
+```
+
+Definition:
+```
+{
+    "define" : {
+        "storage" : "<storage name>",
+        "fields"  : {
+            "<field name>" : "<field type>" // allowed are integer, string and float
+            ...
+        }
+    }
+}
+```
+
+Insertion:
+```
+{
+    "insert" : {
+        "storage" : "<storage name>",
+        "data" : [
+            {"<field1>": "<value>", "<field2>": "<value>"},
+            {"<field1>": "<value>", "<field2>": "<value>"},
+        ]
+    }
+}```
