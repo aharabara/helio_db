@@ -30,6 +30,7 @@ fn main() {
         }else {
             request.respond(response.unwrap()).unwrap();
         }
+        println!("Storage: {:#?}", database);
     }
 }
 

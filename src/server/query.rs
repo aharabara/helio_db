@@ -73,13 +73,16 @@ impl Query {
     }
 
     pub fn execute(self, database: &mut Database) -> Result<String, QueryStatus> {
+        // Handle definition query
         if self.definition.is_some() {
             let definition = self.definition.unwrap();
             database.add(Storage::new(definition))
         }
+
+        // Handle selection query
         if self.selection.is_some() {
             let selection = self.selection.unwrap();
-            let possible_storage = database.get_storage_by_definition_name(selection.definition_name.as_ref());
+            let possible_storage = database.get_storage_by_name(selection.storage.as_ref());
             if possible_storage.is_err() {
                 return Err(possible_storage.err().unwrap());
             }
@@ -92,6 +95,7 @@ impl Query {
 
             return Ok(json);
         }
+
         return Ok("{\"status\" :\"Something went wrong\" }".to_string());
     }
     pub fn has_query_type(query_type : &str, query_obj: &Map<String, Value>) -> bool {

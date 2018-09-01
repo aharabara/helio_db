@@ -17,7 +17,9 @@ impl Storage {
         let mut data: Vec<HashMap<String, String>> = Vec::new();
         let mut row: HashMap<String, String> = HashMap::new();
         /*@todo remove when insert will be done*/
-        row.insert("field".to_string(), "value".to_string());
+        row.insert("id".to_string(), "0".to_string());
+        row.insert("name".to_string(), "Alexander".to_string());
+        row.insert("role".to_string(), "administrator".to_string());
         data.push(row);
 
         Storage{

@@ -2,19 +2,19 @@
 ### Stage 1
  - [ ] Table definition query
     - [x] Base query
-    - [ ] Field types
+    - [x] Field types
     - [ ] Data storing according to table definition
 
 ### Stage 2
- - [ ] Table modification query
-    - [ ] Specific fields
-
-### Stage 3
  - [ ] Data selection query
     - [x] Single table
     - [x] Base query
     - [ ] Specific fields
     - [ ] Multiple tables
+
+### Stage 3
+ - [ ] Table modification query
+    - [ ] Specific fields
 
 ### Stage 4
  - [ ] Data modification query

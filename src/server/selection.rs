@@ -7,19 +7,19 @@ use server::QueryStatus;
 #[derive(Serialize, Deserialize)]
 pub struct Selection {
     fields: Vec<String>,
-    pub definition_name: String,
+    pub storage: String,
 //    where_clause: WhereClause,
 }
 
 impl Selection {
     fn new(
-        definition_name: String,
+        storage: String,
         fields: Vec<String>
 //           , where_clause: WhereClause
     ) -> Selection {
         Selection {
             fields,
-            definition_name,
+            storage,
 //            where_clause
         }
     }
@@ -30,7 +30,7 @@ impl Selection {
             return Err(result.err().unwrap());
         }
 // handle name
-        let possible_name = map["definition_name"].as_str();
+        let possible_name = map["storage"].as_str();
         if possible_name.is_none() {
             return Err(QueryStatus::NoName);
         }
@@ -43,7 +43,7 @@ impl Selection {
     }
 
     fn validate(map: &Map<String, Value>) -> Result<QueryStatus, QueryStatus> {
-        if !map.contains_key("definition_name") {
+        if !map.contains_key("storage") {
             return Err(QueryStatus::NoDefinitionSpecified);
         }
         if map.contains_key("fields") {
