@@ -27,3 +27,8 @@ Database entity
  - [ ] Allow multiple databases
  - [ ] Add user management
  - [ ] Add user authentication
+
+## Glosario
+ Storage  - table, that has definition and data that match this definition
+
+ Database - collection of storages
