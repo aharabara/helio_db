@@ -1,4 +1,4 @@
-## HeliDB todo list.
+## HelioDB todo list.
 ### Stage 1
  - [x] Table definition query
     - [x] Base query
