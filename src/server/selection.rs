@@ -6,7 +6,7 @@ use server::QueryStatus;
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
 pub struct Selection {
-    fields: Vec<String>,
+    pub fields: Vec<String>,
     pub storage: String,
 //    where_clause: WhereClause,
 }
@@ -36,8 +36,20 @@ impl Selection {
         }
 
         let possible_fields = map["fields"].as_array();
+        let mut fields: Vec<String> = vec![];
+        if possible_fields.is_some() {
+            for item in possible_fields.unwrap().iter() {
+                let possible_field = item.as_str();
+                if possible_field.is_none() {
+                    return  Err(QueryStatus::FieldsClauseShouldContainOnlyStrings)
+                }
+                fields.push(possible_field.unwrap().to_string());
+            }
+        }else{
+            fields.push("*".to_string());
+        }
 
-        return Ok(Selection::new(possible_name.unwrap().to_string(), vec!["*".to_string()]));
+        return Ok(Selection::new(possible_name.unwrap().to_string(), fields));
         // @todo array<value> => array<str>
 //        return Selection::new(possible_name.unwrap().to_string(), possible_fields.unwrap())
     }

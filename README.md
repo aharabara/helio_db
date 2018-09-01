@@ -9,7 +9,7 @@
  - [ ] Data selection query
     - [x] Single table
     - [x] Base query
-    - [ ] Specific fields
+    - [x] Specific fields
     - [ ] Multiple tables
 
 ### Stage 3

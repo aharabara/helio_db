@@ -33,8 +33,25 @@ impl Storage {
         return name;
     }
 
-    pub fn search(&self, selection: &Selection) -> Result<&Vec<HashMap<String, String>>, QueryStatus>{
-        return Ok(self.data.as_ref());
+    pub fn search(&self, selection: &Selection) -> Result<Vec<HashMap<String, String>>, QueryStatus>{
+        let mut response: Vec<HashMap<String, String>> = vec![];
+        let mut data: HashMap<String, String>;
+        // get only requested fields
+        for row in self.data.iter() {
+            data = HashMap::new();
+            for key in selection.fields.iter() {
+                // If it is required to show all fields
+                if key.eq("*") {
+                    data = row.clone();
+                    break;
+                }else{
+                    let value = row.get(key.as_str()).unwrap().to_string();
+                    data.insert(key.to_string(), value);
+                }
+            }
+            response.push(data);
+        }
+        return Ok(response);
     }
 }
 

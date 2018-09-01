@@ -82,6 +82,7 @@ impl Query {
         // Handle selection query
         if self.selection.is_some() {
             let selection = self.selection.unwrap();
+            // @todo move to selection method
             let possible_storage = database.get_storage_by_name(selection.storage.as_ref());
             if possible_storage.is_err() {
                 return Err(possible_storage.err().unwrap());

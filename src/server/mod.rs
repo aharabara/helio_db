@@ -22,7 +22,8 @@ pub enum QueryStatus {
     Good,
     NoDefinitionSpecified,
     InvalidSelectionFieldsFormat,
-    SpecifiedDefinitionDoNotExist
+    SpecifiedDefinitionDoNotExist,
+    FieldsClauseShouldContainOnlyStrings
 }
 
 #[derive(Debug)]
