@@ -54,22 +54,22 @@ Database entity
 ## Examples
 
 Selection :
-```
+```json
 {
     "select" : {
         "storage" : "<storage name>",
-        "fields"  : [...<fields>]
+        "fields"  : ["<fields-1>", "<fields-2>"]
     }
 }
 ```
 
 Definition:
-```
+```json
 {
     "define" : {
         "storage" : "<storage name>",
         "fields"  : {
-            "<field name>" : "<field type>" // allowed are integer, string and float
+            "<field name>" : "<integer|string|float>"
             ...
         }
     }
@@ -77,13 +77,14 @@ Definition:
 ```
 
 Insertion:
-```
+```json
 {
     "insert" : {
         "storage" : "<storage name>",
         "data" : [
-            {"<field1>": "<value>", "<field2>": "<value>"},
-            {"<field1>": "<value>", "<field2>": "<value>"},
+            {"<field-1>": "<value>", "<field-2>": "<value>"},
+            {"<field-1>": "<value>", "<field-2>": "<value>"},
         ]
     }
-}```
+}
+```
