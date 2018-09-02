@@ -1,4 +1,9 @@
+extern crate serde_json;
+
 use std::collections::HashMap;
+use std::fmt;
+use tiny_http::Response;
+use std::io::Cursor;
 
 pub mod query;
 pub mod storage;
@@ -21,14 +26,34 @@ pub enum QueryStatus {
     NoName,
     InvalidFieldType,
     InvalidQuery,
-    General,
-    Good,
+    Valid,
+    Inserted,
     NoDefinitionSpecified,
     InvalidSelectionFieldsFormat,
     SpecifiedDefinitionDoNotExist,
     FieldsClauseShouldContainOnlyStrings,
     DataForInsertionNotSpecified,
-    InvalidRowFormat
+    InvalidRowFormat,
+    StorageAlreadyExists,
+    StorageCreated,
+}
+
+impl QueryStatus {
+    pub fn to_response(&self) -> Response<Cursor<Vec<u8>>> {
+        let mut map: HashMap<String, String> = HashMap::new();
+        map.insert("error".to_string(), self.to_string());
+        let result = serde_json::to_string(&map);
+        if result.is_err(){
+            panic!(result.err());
+        }
+        Response::from_string(result.ok().unwrap())
+    }
+}
+
+impl fmt::Display for QueryStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:#?}", self)
+    }
 }
 
 #[derive(Debug)]

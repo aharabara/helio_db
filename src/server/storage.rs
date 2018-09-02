@@ -2,6 +2,7 @@ use server::definition::Definition;
 use std::collections::HashMap;
 use server::selection::Selection;
 use server::QueryStatus;
+use server::FieldType;
 
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
@@ -33,6 +34,14 @@ impl Storage {
         return name;
     }
 
+    pub fn insert(&mut self, row: HashMap<String, String>) -> bool{
+        if self.is_valid_row(&row) {
+            self.data.push(row.clone());
+            return true;
+        }
+        return false;
+    }
+
     pub fn search(&self, selection: &Selection) -> Result<Vec<HashMap<String, String>>, QueryStatus>{
         let mut response: Vec<HashMap<String, String>> = vec![];
         let mut data: HashMap<String, String>;
@@ -52,6 +61,30 @@ impl Storage {
             response.push(data);
         }
         return Ok(response);
+    }
+    pub fn is_valid_row(&self, row: &HashMap<String, String>) -> bool{
+        for (field, field_type) in self.definition.fields.iter() {
+            if !row.contains_key(field){
+                return false
+            }
+            let value = row.get(field).unwrap();
+            match field_type {
+                FieldType::STRING => { /* skip, because it is already string */}
+                FieldType::INTEGER => {
+                    let result = value.parse::<i32>();
+                    if result.is_err() {
+                        return false;
+                    }
+                }
+                FieldType::FLOAT => {
+                    let result = value.parse::<f32>();
+                    if result.is_err() {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 }
 

@@ -51,7 +51,7 @@ impl Definition {
         if !map.contains_key("fields") {
             return Err(QueryStatus::NoFields);
         }
-        Ok(QueryStatus::Good)
+        Ok(QueryStatus::Valid)
     }
 
     fn object_to_fields(map: &Map<String, Value>) -> Result<FieldMap, QueryStatus> {

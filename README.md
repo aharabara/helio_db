@@ -12,38 +12,60 @@
 
 ### Stage 3
  - [ ] Data modification query
-     - [ ] Insert
+     - [x] Insert
      - [ ] Update
      - [ ] Delete
 
+### Refactoring
+    - [ ] Restructure
+    - [ ] Simplify
+    - [ ] Docs
+
 ### Stage 4
+ - [ ] Data modification queries transaction
+     - [ ] Insert only if all is valid
+     - [ ] Update only if all is valid
+     - [ ] Delete only if all is valid
+
+### Stage 5
  - [ ] Data selection query
     - [ ] Multiple tables
 
-### Stage 5
+### Stage 6
  - [ ] Table modification query
     - [ ] Specific fields
 
-### Stage 6
+### Refactoring
+    - [ ] Restructure
+    - [ ] Simplify
+    - [ ] Docs
+
+### Stage 7
  - [ ] Table definition query
     - [ ] Data storing according to table definition
 
-### Stage 7
+### Stage 8
 Database entity
  - [ ] Allow multiple databases
  - [ ] Add user management
  - [ ] Add user authentication
 
-### Stage 8
+### Stage 9
+ - [ ] Field nullability
  - [ ] Reference to another table field type.
 
-### Stage 9
+### Refactoring
+    - [ ] Restructure
+    - [ ] Simplify
+    - [ ] Docs
+
+### Stage 10
  - [ ] Multiple queries per request
  ```
  [{<query>}, {<query>}, {<query>}].
  ```
 
-### Stage 10
+### Stage 11
  - [ ] Transactions?
 
 ## Glossaries

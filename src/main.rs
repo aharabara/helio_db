@@ -17,20 +17,21 @@ fn main() {
     let server = Server::http("0.0.0.0:8000").unwrap();
     let mut database = Database::new();
     for mut request in server.incoming_requests() {
-        println!("received request! method:\n{:#?}\nurl: {:#?}\nheaders: {:?}\n",
-                 request.method(),
-                 request.url(),
-                 request.headers()
-        );
+//        println!("received request! method:\n{:#?}\nurl: {:#?}\nheaders: {:?}\n",
+//                 request.method(),
+//                 request.url(),
+//                 request.headers()
+//        );
         let json = request.get_json();
         let response = request.get_response(json, database.borrow_mut());
         /*@todo add bad response (>400)*/
         if response.is_err() {
-            println!("Error : {:#?}", response.err().unwrap());
+            let error = response.err().unwrap();
+            request.respond(error.to_response()).unwrap();
         }else {
             request.respond(response.unwrap()).unwrap();
         }
-        println!("Storage: {:#?}", database);
+//        println!("Storage: {:#?}", database);
     }
 }
 
@@ -57,11 +58,9 @@ impl RequestExt for Request {
                 if query.is_err() {
                     response = Response::from_string(format!("ERROR: {:?}\n", query.err().unwrap()));
                 } else {
-                    let possible_json_response = query.unwrap().execute(database);
-                    if possible_json_response.is_err() {
-                        return Err(possible_json_response.err().unwrap());
-                    }
-                    response = Response::from_string(possible_json_response.unwrap());
+                    let response_object = query.unwrap().execute(database);
+                    let json = serde_json::to_string(&response_object);
+                    response = Response::from_string(json.unwrap());
                 }
             }
             Err(error) => {

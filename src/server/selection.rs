@@ -64,6 +64,6 @@ impl Selection {
                 return Err(QueryStatus::InvalidSelectionFieldsFormat);
             }
         }
-        Ok(QueryStatus::Good)
+        Ok(QueryStatus::Valid)
     }
 }

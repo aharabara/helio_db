@@ -8,6 +8,7 @@ use serde_json::Map;
 use server::database::Database;
 use server::selection::Selection;
 use server::insertion::Insertion;
+use std::collections::HashMap;
 
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
@@ -21,7 +22,7 @@ impl Query {
     pub fn from_json_object(query_request: Value) -> Result<Query, QueryStatus> {
         let possible_definition;
         let possible_selection;
-        let possible_modification;
+        let possible_insertion;
 
         let possible_query_obj = query_request.as_object();
         if possible_query_obj.is_none() {
@@ -69,11 +70,15 @@ impl Query {
         return Ok(query);
     }
 
-    pub fn execute(self, database: &mut Database) -> Result<String, QueryStatus> {
+    pub fn execute(self, database: &mut Database) -> HashMap<String, Value> {
+        let mut response:HashMap<String, Value> = HashMap::new();
         // Handle definition query
         if self.definition.is_some() {
             let definition = self.definition.unwrap();
-            database.add(Storage::new(definition))
+            let result = database.add(Storage::new(definition));
+            let status = if result.is_err() { result.err() } else { result.ok() };
+            let value = serde_json::to_value(status.unwrap().to_string()).unwrap();
+            response.insert("define".to_string(), value);
         }
 
         // Handle selection query
@@ -82,19 +87,43 @@ impl Query {
             // @todo move to selection method
             let possible_storage = database.get_storage_by_name(selection.storage.as_ref());
             if possible_storage.is_err() {
-                return Err(possible_storage.err().unwrap());
+                let result = serde_json::to_value(possible_storage.err().unwrap().to_string());
+                response.insert("select".to_string(), result.unwrap());
+            }else{
+                /* @TODO stopped here*/
+                let result = possible_storage.unwrap().search(&selection);
+                if result.is_err() {
+                    let result = serde_json::to_value(result.err().unwrap().to_string());
+                    response.insert("select".to_string(), result.unwrap());
+                }else{
+                    let rows = result.ok().unwrap().to_owned();
+                    let rows = serde_json::to_value(&rows).unwrap();
+                    response.insert("select".to_string(), rows);
+                }
             }
-            let result = possible_storage.unwrap().search(&selection);
-            if result.is_err() {
-                return Err(result.err().unwrap());
-            }
-            let rows = result.ok().unwrap().to_owned();
-            let json = serde_json::to_string(&rows).unwrap();
-
-            return Ok(json);
         }
 
-        return Ok("{\"status\" :\"Something went wrong\" }".to_string());
+        // Handle definition query
+        if self.insertion.is_some() {
+            let insertion = self.insertion.unwrap();
+            // @todo move to insertion method
+            let possible_storage = database.get_storage_by_name(insertion.storage.as_ref());
+            if possible_storage.is_err() {
+                let result = serde_json::to_value(possible_storage.err().unwrap().to_string());
+                response.insert("insert".to_string(), result.unwrap());
+            }else{
+                let mut storage = possible_storage.unwrap();
+                let result = insertion.execute(&mut storage);
+                if result.is_err(){
+                    let value = serde_json::to_value(result.err().unwrap().to_string()).unwrap();
+                    response.insert("insert".to_string(), value);
+                }else{
+                    let value = serde_json::to_value(result.ok().unwrap().to_string()).unwrap();
+                    response.insert("insert".to_string(), value);
+                }
+            }
+        }
+        return response;
     }
     pub fn has_query_type(query_type : &str, query_obj: &Map<String, Value>) -> bool {
         let possible_define = query_obj.get(query_type);
