@@ -8,9 +8,7 @@ use std::io::Cursor;
 pub mod query;
 pub mod storage;
 pub mod database;
-pub mod definition;
-pub mod selection;
-pub mod insertion;
+pub mod operation;
 pub mod where_clause;
 
 pub type FieldMap = HashMap<String, FieldType>;

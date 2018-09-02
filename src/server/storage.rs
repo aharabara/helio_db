@@ -1,28 +1,20 @@
-use server::definition::Definition;
 use std::collections::HashMap;
-use server::selection::Selection;
 use server::QueryStatus;
 use server::FieldType;
+use server::operation::definition::Definition;
+use server::operation::selection::Selection;
 
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
 pub struct Storage{
     definition : Definition,
-
     /* @todo try to split in types for better performance? memory usage?*/
     data : Vec<HashMap<String, String>>,
 }
 
 impl Storage {
     pub fn new(definition: Definition)-> Storage {
-        let mut data: Vec<HashMap<String, String>> = Vec::new();
-        let mut row: HashMap<String, String> = HashMap::new();
-        /*@todo remove when insert will be done*/
-        row.insert("id".to_string(), "0".to_string());
-        row.insert("name".to_string(), "Alexander".to_string());
-        row.insert("role".to_string(), "administrator".to_string());
-        data.push(row);
-
+        let data: Vec<HashMap<String, String>> = Vec::new();
         Storage{
             definition,
             data

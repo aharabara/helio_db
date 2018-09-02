@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 use server::storage::Storage;
 use server::QueryStatus;
-use server::definition::Definition;
-use server::selection::Selection;
 
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
@@ -24,9 +22,6 @@ impl Database {
         }
         self.storages.insert(storage.get_name().to_string(), storage);
         return Ok(QueryStatus::StorageCreated);
-    }
-
-    pub fn search_in_definition(&mut self, definition: Definition, selection: Selection){
     }
 
     pub fn get_storage_by_name(&mut self, storage_name: &str) -> Result<&mut Storage, QueryStatus>{

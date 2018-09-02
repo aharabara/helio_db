@@ -1,14 +1,14 @@
 extern crate serde_json;
 
 use serde_json::Value;
-use server::definition::Definition;
 use server::QueryStatus;
 use server::storage::Storage;
 use serde_json::Map;
-use server::database::Database;
-use server::selection::Selection;
-use server::insertion::Insertion;
 use std::collections::HashMap;
+use server::operation::definition::Definition;
+use server::operation::selection::Selection;
+use server::operation::insertion::Insertion;
+use server::database::Database;
 
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
@@ -42,16 +42,6 @@ impl Query {
         }
 
         // if there is any data selection clause
-        if Query::has_query_type("select", query_object) {
-            possible_selection = Selection::from_json_object(query_object.get("select").unwrap());
-            if possible_selection.is_err() {
-                return Err(possible_selection.err().unwrap());
-            }
-        }else{
-            possible_selection = Err(QueryStatus::NoSelection)
-        }
-
-        // if there is any data selection clause
         if Query::has_query_type("insert", query_object) {
             possible_insertion = Insertion::from_json_object(query_object.get("insert").unwrap());
             if possible_insertion.is_err() {
@@ -61,10 +51,20 @@ impl Query {
             possible_insertion = Err(QueryStatus::NoModification)
         }
 
+        // if there is any data selection clause
+        if Query::has_query_type("select", query_object) {
+            possible_selection = Selection::from_json_object(query_object.get("select").unwrap());
+            if possible_selection.is_err() {
+                return Err(possible_selection.err().unwrap());
+            }
+        }else{
+            possible_selection = Err(QueryStatus::NoSelection)
+        }
+
         let query = Query {
             definition  : possible_definition.ok(),
-            selection   : possible_selection.ok(),
             insertion   : possible_insertion.ok(),
+            selection   : possible_selection.ok(),
         };
 
         return Ok(query);
@@ -79,6 +79,27 @@ impl Query {
             let status = if result.is_err() { result.err() } else { result.ok() };
             let value = serde_json::to_value(status.unwrap().to_string()).unwrap();
             response.insert("define".to_string(), value);
+        }
+
+        // Handle definition query
+        if self.insertion.is_some() {
+            let insertion = self.insertion.unwrap();
+            // @todo move to insertion method
+            let possible_storage = database.get_storage_by_name(insertion.storage.as_ref());
+            if possible_storage.is_err() {
+                let result = serde_json::to_value(possible_storage.err().unwrap().to_string());
+                response.insert("insert".to_string(), result.unwrap());
+            }else{
+                let mut storage = possible_storage.unwrap();
+                let result = insertion.execute(&mut storage);
+                if result.is_err(){
+                    let value = serde_json::to_value(result.err().unwrap().to_string()).unwrap();
+                    response.insert("insert".to_string(), value);
+                }else{
+                    let value = serde_json::to_value(result.ok().unwrap().to_string()).unwrap();
+                    response.insert("insert".to_string(), value);
+                }
+            }
         }
 
         // Handle selection query
@@ -99,27 +120,6 @@ impl Query {
                     let rows = result.ok().unwrap().to_owned();
                     let rows = serde_json::to_value(&rows).unwrap();
                     response.insert("select".to_string(), rows);
-                }
-            }
-        }
-
-        // Handle definition query
-        if self.insertion.is_some() {
-            let insertion = self.insertion.unwrap();
-            // @todo move to insertion method
-            let possible_storage = database.get_storage_by_name(insertion.storage.as_ref());
-            if possible_storage.is_err() {
-                let result = serde_json::to_value(possible_storage.err().unwrap().to_string());
-                response.insert("insert".to_string(), result.unwrap());
-            }else{
-                let mut storage = possible_storage.unwrap();
-                let result = insertion.execute(&mut storage);
-                if result.is_err(){
-                    let value = serde_json::to_value(result.err().unwrap().to_string()).unwrap();
-                    response.insert("insert".to_string(), value);
-                }else{
-                    let value = serde_json::to_value(result.ok().unwrap().to_string()).unwrap();
-                    response.insert("insert".to_string(), value);
                 }
             }
         }

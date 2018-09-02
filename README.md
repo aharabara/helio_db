@@ -13,8 +13,9 @@
 ### Stage 3
  - [ ] Data modification query
      - [x] Insert
-     - [ ] Update
+     - [ ] Where clause
      - [ ] Delete
+     - [ ] Update
 
 ### Refactoring
  - [ ] Restructure
