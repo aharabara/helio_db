@@ -17,9 +17,9 @@
      - [ ] Delete
 
 ### Refactoring
-    - [ ] Restructure
-    - [ ] Simplify
-    - [ ] Docs
+ - [ ] Restructure
+ - [ ] Simplify
+ - [ ] Docs
 
 ### Stage 4
  - [ ] Data modification queries transaction
