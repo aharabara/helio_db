@@ -36,9 +36,9 @@
     - [ ] Specific fields
 
 ### Refactoring
-    - [ ] Restructure
-    - [ ] Simplify
-    - [ ] Docs
+ - [ ] Restructure
+ - [ ] Simplify
+ - [ ] Docs
 
 ### Stage 7
  - [ ] Table definition query
@@ -55,9 +55,9 @@ Database entity
  - [ ] Reference to another table field type.
 
 ### Refactoring
-    - [ ] Restructure
-    - [ ] Simplify
-    - [ ] Docs
+ - [ ] Restructure
+ - [ ] Simplify
+ - [ ] Docs
 
 ### Stage 10
  - [ ] Multiple queries per request
